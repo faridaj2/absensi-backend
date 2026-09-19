@@ -17,6 +17,8 @@ use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login']);
+Route::get('/setup/check', [\App\Http\Controllers\Api\SetupController::class, 'check']);
+Route::post('/setup', [\App\Http\Controllers\Api\SetupController::class, 'setup']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);

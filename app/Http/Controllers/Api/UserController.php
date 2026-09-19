@@ -35,6 +35,10 @@ class UserController extends Controller
             ? $data['role']
             : User::ROLE_GURU;
 
+        if (isset($data['password'])) {
+            $data['password'] = \Illuminate\Support\Facades\Hash::make($data['password']);
+        }
+
         $user = User::create($data);
 
         return new UserResource($user->load('instansi'));
@@ -44,7 +48,12 @@ class UserController extends Controller
     {
         $this->authorize('update', $user);
 
-        $user->update($request->validated());
+        $data = $request->validated();
+        if (isset($data['password'])) {
+            $data['password'] = \Illuminate\Support\Facades\Hash::make($data['password']);
+        }
+
+        $user->update($data);
 
         return new UserResource($user->load('instansi'));
     }

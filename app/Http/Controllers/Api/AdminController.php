@@ -15,13 +15,14 @@ class AdminController extends Controller
     {
         $this->authorize('viewAny', User::class);
 
-        $admins = User::query()
-            ->where('role', User::ROLE_ADMIN)
+        $users = User::query()
+            ->whereIn('role', [User::ROLE_SUPERADMIN, User::ROLE_ADMIN])
             ->with('instansi')
+            ->orderBy('role')
             ->orderBy('name')
             ->get();
 
-        return UserResource::collection($admins);
+        return UserResource::collection($users);
     }
 
     public function store(StoreUserRequest $request)
@@ -29,8 +30,13 @@ class AdminController extends Controller
         $this->authorize('create', User::class);
 
         $data = $request->validated();
-        $data['role'] = User::ROLE_ADMIN;
-        $data['instansi_id'] = $data['instansi_id'] ?? null;
+        if ($data['role'] === User::ROLE_SUPERADMIN) {
+            $data['instansi_id'] = null;
+        }
+
+        if (isset($data['password'])) {
+            $data['password'] = \Illuminate\Support\Facades\Hash::make($data['password']);
+        }
 
         $admin = User::create($data);
 
@@ -41,7 +47,16 @@ class AdminController extends Controller
     {
         $this->authorize('update', $user);
 
-        $user->update($request->validated());
+        $data = $request->validated();
+        if (isset($data['role']) && $data['role'] === User::ROLE_SUPERADMIN) {
+            $data['instansi_id'] = null;
+        }
+
+        if (isset($data['password'])) {
+            $data['password'] = \Illuminate\Support\Facades\Hash::make($data['password']);
+        }
+
+        $user->update($data);
 
         return new UserResource($user->load('instansi'));
     }
