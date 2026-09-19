@@ -1,58 +1,95 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+﻿# Absensi Backend - Hudhur Darussalam 2
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Backend API untuk aplikasi absensi guru, pegawai, dan siswa. Dibangun dengan Laravel 13 + Sanctum + SQLite/MySQL.
 
-## About Laravel
+Frontend build (React/Vite) sudah disertakan di folder public/ sehingga repo ini siap di-pull langsung ke shared hosting.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Fitur Utama
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- Multi-tenant per instansi - data ter-scope otomatis via trait BelongsToInstansi.
+- Absensi pegawai & guru - validasi GPS radius + jadwal jam masuk/pulang, status otomatis tepat_waktu / telat.
+- Absensi siswa per jam pelajaran - guru bisa klaim slot mengajar guru lain yang telat, dan guru asli bisa ambil kembali slotnya (release).
+- Jadwal kerja & jadwal pelajaran - per hari, per jam ke.
+- Manajemen izin/sakit/alpa manual oleh admin.
+- Laporan - rekap kehadiran, JP mengajar, matriks harian; cetak A/B.
+- Monitor realtime - pantau guru/pegawai yang sudah absen & kelas yang sudah terabsen.
+- Role: superadmin, admin, guru, pegawai.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Stack
 
-## Learning Laravel
+| Komponen | Versi |
+|---|---|
+| PHP | ^8.3 |
+| Laravel | ^13.17 |
+| Laravel Sanctum | ^4.3 |
+| Database | SQLite (dev) / MySQL (prod) |
+| Frontend (built) | React 19 + Vite 8 + Tailwind 4 |
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Instalasi Lokal
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+git clone git@github.com:faridaj2/absensi-backend.git
+cd absensi-backend
+composer install
+cp .env.example .env
+php artisan key:generate
+touch database/database.sqlite
+php artisan migrate --seed
+php artisan serve
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+API: http://127.0.0.1:8000/api
 
-## Agentic Development
+## Deploy ke Shared Hosting
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+1. Clone repo ini ke hosting.
+2. Salin .env.example ke .env, isi APP_URL, kredensial DB, SANCTUM_STATEFUL_DOMAINS.
+3. Jalankan php artisan key:generate
+4. Arahkan document root ke public/.
+5. Jalankan php artisan migrate --force.
+6. Jalankan php artisan config:cache dan php artisan route:cache.
 
-```bash
-composer require laravel/boost --dev
+Jika tidak bisa ubah document root, pindahkan isi public/ ke public_html/ dan sesuaikan path require di index.php.
 
-php artisan boost:install
-```
+## Akun Default (DatabaseSeeder)
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+| Role | Email | Password |
+|---|---|---|
+| Superadmin | superadmin@example.com | password |
+| Admin | admin@example.com | password |
+| Guru | guru@example.com | password |
+| Pegawai | pegawai@example.com | password |
 
-## Contributing
+## Struktur
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+app/
+  Http/Controllers/Api/
+  Http/Requests/
+  Http/Resources/
+  Models/
+  Services/
+  Traits/BelongsToInstansi.php
+database/migrations/
+routes/api.php
+public/ (document root + built frontend)
 
-## Code of Conduct
+## Endpoint Utama
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+| Method | Path |
+|---|---|
+| POST | /api/login |
+| GET | /api/me |
+| POST | /api/absensi/pegawai |
+| GET | /api/absensi-siswa/slot |
+| POST | /api/absensi-siswa/{id}/claim |
+| POST | /api/absensi-siswa/{id}/release |
+| GET | /api/monitor/hari-ini |
+| GET | /api/laporan/rekap-guru |
 
-## Security Vulnerabilities
+Lihat routes/api.php untuk lengkapnya.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Testing
 
-## License
+php artisan test
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+---
+
+Dikembangkan untuk SMP Darussalam 2.
