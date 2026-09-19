@@ -1,4 +1,4 @@
-﻿# Absensi Backend - Hudhur Darussalam 2
+﻿# Absensi Backend - SIKAP Darussalam 2
 
 Backend API untuk aplikasi absensi guru, pegawai, dan siswa. Dibangun dengan Laravel 13 + Sanctum + SQLite/MySQL.
 
