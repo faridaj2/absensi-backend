@@ -7,12 +7,25 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Marcellus&family=Amiri:wght@400;700&display=swap"
       rel="stylesheet"
     />
+    <script>
+      // Anti-flash: set tema sebelum render
+      (function () {
+        try {
+          var t = localStorage.getItem('theme');
+          if (t !== 'dark' && t !== 'light') {
+            t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          }
+          if (t === 'dark') document.documentElement.classList.add('dark');
+          document.documentElement.style.colorScheme = t;
+        } catch (e) {}
+      })();
+    </script>
     <title>SIKAP — Sistem Informasi Kehadiran Pegawai</title>
-    <script type="module" crossorigin src="/assets/index-BsDbRohr.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-BLKcHPCQ.css">
+    <script type="module" crossorigin src="/assets/index-BmWrSwAl.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-5iq5Uond.css">
   </head>
   <body>
     <div id="root"></div>
