@@ -1,0 +1,83 @@
+<?php
+
+use App\Http\Controllers\Api\AbsensiPegawaiController;
+use App\Http\Controllers\Api\AbsensiSiswaController;
+use App\Http\Controllers\Api\AdminController;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\GuruMapelKelasController;
+use App\Http\Controllers\Api\InstansiController;
+use App\Http\Controllers\Api\JadwalController;
+use App\Http\Controllers\Api\KelasController;
+use App\Http\Controllers\Api\LaporanController;
+use App\Http\Controllers\Api\LokasiController;
+use App\Http\Controllers\Api\MapelController;
+use App\Http\Controllers\Api\MonitorController;
+use App\Http\Controllers\Api\SiswaController;
+use App\Http\Controllers\Api\UserController;
+use Illuminate\Support\Facades\Route;
+
+Route::post('/login', [AuthController::class, 'login']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/me', [AuthController::class, 'me']);
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::put('/profile', [AuthController::class, 'updateProfile']);
+    Route::put('/profile/password', [AuthController::class, 'updatePassword']);
+
+    // Superadmin: instansi & admin
+    Route::middleware('role:superadmin')->group(function () {
+        Route::get('instansi/kode-admin', [InstansiController::class, 'kodeAdmin']);
+        Route::apiResource('instansi', InstansiController::class);
+        Route::apiResource('admin', AdminController::class)->except('show');
+    });
+
+    // Admin: master data per instansi
+    Route::middleware('role:admin')->group(function () {
+        Route::apiResource('jadwal', JadwalController::class)->except('show');
+        Route::apiResource('lokasi', LokasiController::class)->except('show');
+        Route::apiResource('mapel', MapelController::class)->except('show');
+        Route::post('kelas/sync', [KelasController::class, 'sync']);
+        Route::apiResource('kelas', KelasController::class)->except('show')->parameters(['kelas' => 'kelas']);
+        Route::apiResource('guru-mapel-kelas', GuruMapelKelasController::class)->except('show')->parameters(['guru-mapel-kelas' => 'guruMapelKelas']);
+        Route::post('/absensi/manual', [AbsensiPegawaiController::class, 'manual']);
+    });
+
+    // Admin & superadmin: kelola user guru/pegawai
+    Route::middleware('role:admin,superadmin')->group(function () {
+        Route::apiResource('users', UserController::class)->except('show');
+    });
+
+    // Absensi guru & pegawai
+    Route::get('/absensi/pegawai', [AbsensiPegawaiController::class, 'index']);
+    Route::middleware('role:guru,pegawai')->post('/absensi/pegawai', [AbsensiPegawaiController::class, 'store']);
+
+    // Absensi siswa
+    Route::middleware('role:guru')->group(function () {
+        Route::get('/absensi-siswa/slot', [AbsensiSiswaController::class, 'slotsHariIni']);
+        Route::get('/absensi-siswa/{guruMapelKelas}/siswa', [AbsensiSiswaController::class, 'siswa']);
+        Route::post('/absensi-siswa/{guruMapelKelas}/claim', [AbsensiSiswaController::class, 'claim']);
+        Route::post('/absensi-siswa/{guruMapelKelas}/release', [AbsensiSiswaController::class, 'release']);
+        Route::post('/absensi-siswa', [AbsensiSiswaController::class, 'store']);
+    });
+
+    // Proxy data siswa (admin & guru)
+    Route::middleware('role:admin,guru')->group(function () {
+        Route::get('/siswa/kelas', [SiswaController::class, 'kelas']);
+        Route::get('/siswa/kelas/{kelasId}', [SiswaController::class, 'siswa']);
+    });
+
+    // Monitor
+    Route::middleware('role:superadmin,admin')->group(function () {
+        Route::get('/monitor/hari-ini', [MonitorController::class, 'hariIni']);
+    });
+
+    // Laporan
+    Route::middleware('role:superadmin,admin')->group(function () {
+        Route::get('/laporan/pegawai', [LaporanController::class, 'pegawai']);
+        Route::get('/laporan/rekap-guru', [LaporanController::class, 'rekapGuru']);
+    });
+    Route::middleware('role:superadmin,admin,guru')->group(function () {
+        Route::get('/laporan/siswa', [LaporanController::class, 'siswa']);
+        Route::get('/laporan/siswa/filter', [LaporanController::class, 'filterSiswa']);
+    });
+});
