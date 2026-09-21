@@ -7,9 +7,9 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\GuruMapelKelasController;
 use App\Http\Controllers\Api\InstansiController;
 use App\Http\Controllers\Api\JadwalController;
+use App\Http\Controllers\Api\JamIstirahatController;
 use App\Http\Controllers\Api\KelasController;
 use App\Http\Controllers\Api\LaporanController;
-use App\Http\Controllers\Api\LokasiController;
 use App\Http\Controllers\Api\MapelController;
 use App\Http\Controllers\Api\MonitorController;
 use App\Http\Controllers\Api\SiswaController;
@@ -36,7 +36,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Admin: master data per instansi
     Route::middleware('role:admin')->group(function () {
         Route::apiResource('jadwal', JadwalController::class)->except('show');
-        Route::apiResource('lokasi', LokasiController::class)->except('show');
+        Route::apiResource('jam-istirahat', JamIstirahatController::class)->except('show')->parameters(['jam-istirahat' => 'jamIstirahat']);
         Route::apiResource('mapel', MapelController::class)->except('show');
         Route::post('kelas/sync', [KelasController::class, 'sync']);
         Route::apiResource('kelas', KelasController::class)->except('show')->parameters(['kelas' => 'kelas']);

@@ -22,6 +22,9 @@ class StoreInstansiRequest extends FormRequest
             'mode_absensi_siswa' => ['required', Rule::in([Instansi::MODE_PER_JAM, Instansi::MODE_PER_HARI])],
             'jenis_kelas_siswa' => ['required', Rule::in([Instansi::KELAS_FORMAL, Instansi::KELAS_DINIYAH])],
             'kode_admin' => ['required', 'string', 'max:50'],
+            'latitude' => ['required', 'numeric', 'between:-90,90'],
+            'longitude' => ['required', 'numeric', 'between:-180,180'],
+            'radius_meter' => ['required', 'integer', 'min:1', 'max:10000'],
         ];
     }
 }

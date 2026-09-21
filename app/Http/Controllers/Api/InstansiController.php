@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreInstansiRequest;
 use App\Http\Resources\InstansiResource;
 use App\Models\Instansi;
+use App\Models\LokasiAbsen;
 use App\Services\SiswaApiService;
 use Illuminate\Http\Request;
 
@@ -39,16 +40,25 @@ class InstansiController extends Controller
     {
         $this->authorize('viewAny', Instansi::class);
 
-        return InstansiResource::collection(Instansi::orderBy('nama')->get());
+        return InstansiResource::collection(Instansi::with('lokasiAbsen')->orderBy('nama')->get());
     }
 
     public function store(StoreInstansiRequest $request)
     {
         $this->authorize('create', Instansi::class);
 
-        $instansi = Instansi::create($request->validated());
+        $data = $request->validated();
 
-        return new InstansiResource($instansi);
+        $instansi = Instansi::create(collect($data)->except(['latitude', 'longitude', 'radius_meter'])->all());
+
+        LokasiAbsen::create([
+            'instansi_id' => $instansi->id,
+            'latitude' => $data['latitude'],
+            'longitude' => $data['longitude'],
+            'radius_meter' => $data['radius_meter'],
+        ]);
+
+        return new InstansiResource($instansi->fresh('lokasiAbsen'));
     }
 
     public function show(Instansi $instansi)
@@ -62,9 +72,20 @@ class InstansiController extends Controller
     {
         $this->authorize('update', $instansi);
 
-        $instansi->update($request->validated());
+        $data = $request->validated();
 
-        return new InstansiResource($instansi);
+        $instansi->update(collect($data)->except(['latitude', 'longitude', 'radius_meter'])->all());
+
+        $instansi->lokasiAbsen()->updateOrCreate(
+            ['instansi_id' => $instansi->id],
+            [
+                'latitude' => $data['latitude'],
+                'longitude' => $data['longitude'],
+                'radius_meter' => $data['radius_meter'],
+            ],
+        );
+
+        return new InstansiResource($instansi->fresh('lokasiAbsen'));
     }
 
     public function destroy(Request $request, Instansi $instansi)

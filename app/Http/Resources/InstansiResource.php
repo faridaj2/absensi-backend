@@ -17,6 +17,9 @@ class InstansiResource extends JsonResource
             'mode_absensi_siswa' => $this->mode_absensi_siswa,
             'jenis_kelas_siswa' => $this->jenis_kelas_siswa,
             'kode_admin' => $this->kode_admin,
+            'latitude' => $this->lokasiAbsen?->latitude,
+            'longitude' => $this->lokasiAbsen?->longitude,
+            'radius_meter' => $this->lokasiAbsen?->radius_meter,
         ];
     }
 }
