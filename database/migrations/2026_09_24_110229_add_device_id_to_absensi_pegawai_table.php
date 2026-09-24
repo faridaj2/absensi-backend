@@ -8,9 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('absensi_pegawais', function (Blueprint $table) {
-            $table->foreignId('device_id')->nullable()->constrained('teacher_devices')->nullOnDelete();
-        });
+        if (!Schema::hasColumn('absensi_pegawais', 'device_id')) {
+            Schema::table('absensi_pegawais', function (Blueprint $table) {
+                $table->foreignId('device_id')->nullable()->constrained('teacher_devices')->nullOnDelete();
+            });
+        }
     }
 
     public function down(): void

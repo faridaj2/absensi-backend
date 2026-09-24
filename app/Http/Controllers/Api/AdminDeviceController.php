@@ -20,9 +20,9 @@ class AdminDeviceController extends Controller
     public function approveRequest(Request $request, $id)
     {
         $user = $request->user();
-        if (!$user->isSuperadmin()) {
+        if (!in_array($user->role, ['superadmin', 'admin_instansi', 'admin'])) {
             DeviceAuditLog::create(['actor_id' => $user->id, 'event' => 'unauthorized_attempt', 'ip' => $request->ip(), 'user_agent' => $request->userAgent(), 'meta' => ['action' => 'approve_request', 'target_id' => $id]]);
-            return response()->json(['message' => 'Hanya superadmin yang dapat menyetujui.'], 403);
+            return response()->json(['message' => 'Anda tidak memiliki akses.'], 403);
         }
 
         $req = DeviceChangeRequest::findOrFail($id);
@@ -52,9 +52,9 @@ class AdminDeviceController extends Controller
     public function rejectRequest(Request $request, $id)
     {
         $user = $request->user();
-        if (!$user->isSuperadmin()) {
+        if (!in_array($user->role, ['superadmin', 'admin_instansi', 'admin'])) {
             DeviceAuditLog::create(['actor_id' => $user->id, 'event' => 'unauthorized_attempt', 'ip' => $request->ip(), 'user_agent' => $request->userAgent(), 'meta' => ['action' => 'reject_request', 'target_id' => $id]]);
-            return response()->json(['message' => 'Hanya superadmin yang dapat menolak.'], 403);
+            return response()->json(['message' => 'Anda tidak memiliki akses.'], 403);
         }
 
         $req = DeviceChangeRequest::findOrFail($id);
@@ -85,9 +85,9 @@ class AdminDeviceController extends Controller
     public function revokeDevice(Request $request, $id)
     {
         $user = $request->user();
-        if (!$user->isSuperadmin()) {
+        if (!in_array($user->role, ['superadmin', 'admin_instansi', 'admin'])) {
             DeviceAuditLog::create(['actor_id' => $user->id, 'event' => 'unauthorized_attempt', 'ip' => $request->ip(), 'user_agent' => $request->userAgent(), 'meta' => ['action' => 'revoke_device', 'target_id' => $id]]);
-            return response()->json(['message' => 'Hanya superadmin yang dapat melakukan revoke.'], 403);
+            return response()->json(['message' => 'Anda tidak memiliki akses.'], 403);
         }
 
         $device = TeacherDevice::findOrFail($id);
