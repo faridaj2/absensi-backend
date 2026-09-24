@@ -21,8 +21,7 @@ return new class extends Migration
             $table->timestamps();
         });
         
-        // Create partial unique index to ensure only ONE active device per teacher
-        DB::statement('CREATE UNIQUE INDEX unique_active_teacher_device ON teacher_devices (teacher_id, (CASE WHEN status = "active" THEN 1 ELSE NULL END))');
+
     }
 
     public function down(): void
