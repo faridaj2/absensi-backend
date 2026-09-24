@@ -158,10 +158,18 @@ class LaporanController extends Controller
             $cursor->addDay();
         }
 
+        // Ambil jadwal untuk mengecek status K (Kosong)
+        $assignments = \App\Models\GuruMapelKelas::withoutGlobalScope('instansi')
+            ->with(['mapel', 'guru'])
+            ->where('instansi_id', $instansiId)
+            ->when($guruId, fn ($q) => $q->where('guru_id', $guruId))
+            ->get()
+            ->groupBy('hari');
+
         // Bangun rekap per guru
         $rekapGuru = [];
         foreach ($gurus as $g) {
-            $stat = ['hadir' => 0, 'izin' => 0, 'sakit' => 0, 'alpa' => 0, 'libur' => 0];
+            $stat = ['hadir' => 0, 'izin' => 0, 'sakit' => 0, 'alpa' => 0, 'libur' => 0, 'kosong' => 0];
             $harian = [];
             foreach ($tanggalList as $t) {
                 $rows = $absenByUserDate[$g->id][$t['tanggal']] ?? [];
@@ -191,7 +199,17 @@ class LaporanController extends Controller
                 } elseif ($t['is_libur']) {
                     $kode = 'L';
                 } else {
-                    $kode = 'A';
+                    $adaJadwal = false;
+                    $slotsHariIni = $assignments->get($t['hari'], collect());
+                    if ($slotsHariIni->where('guru_id', $g->id)->isNotEmpty()) {
+                        $adaJadwal = true;
+                    }
+
+                    if ($adaJadwal) {
+                        $kode = 'A';
+                    } else {
+                        $kode = 'K';
+                    }
                 }
                 $harian[$t['tanggal']] = $kode;
                 if ($kode === 'H') $stat['hadir']++;
@@ -199,6 +217,7 @@ class LaporanController extends Controller
                 elseif ($kode === 'S') $stat['sakit']++;
                 elseif ($kode === 'A') $stat['alpa']++;
                 elseif ($kode === 'L') $stat['libur']++;
+                elseif ($kode === 'K') $stat['kosong']++;
             }
             $rekapGuru[] = [
                 'id' => $g->id,
@@ -210,13 +229,6 @@ class LaporanController extends Controller
         }
 
         // ---- Jam mengajar ----
-        $assignments = \App\Models\GuruMapelKelas::withoutGlobalScope('instansi')
-            ->with(['mapel', 'guru'])
-            ->where('instansi_id', $instansiId)
-            ->when($guruId, fn ($q) => $q->where('guru_id', $guruId))
-            ->get()
-            ->groupBy('hari');
-
         $pengganti = \App\Models\GuruPengganti::withoutGlobalScope('instansi')
             ->with('guruPengganti')
             ->where('instansi_id', $instansiId)
