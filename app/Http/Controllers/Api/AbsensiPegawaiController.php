@@ -67,7 +67,6 @@ class AbsensiPegawaiController extends Controller
         if ($jadwalHari) {
             $jamSekarang = $waktu->format('H:i:s');
             $jamMasukJadwal = \Carbon\Carbon::parse($jadwalHari->jam_masuk)->format('H:i:s');
-            $jamPulangJadwal = \Carbon\Carbon::parse($jadwalHari->jam_pulang)->format('H:i:s');
 
             if ($jenis === AbsensiPegawai::JENIS_MASUK) {
                 if ($jamSekarang < $jamMasukJadwal) {
@@ -78,10 +77,6 @@ class AbsensiPegawaiController extends Controller
                     $waktu,
                     $jadwalHari->toleransi_menit ?? 15
                 );
-            } elseif ($jenis === AbsensiPegawai::JENIS_PULANG) {
-                if ($jamSekarang < $jamPulangJadwal) {
-                    return response()->json(['message' => 'Belum waktunya absen pulang (Jam pulang: ' . $jadwalHari->jam_pulang . ').'], 422);
-                }
             }
         }
 
