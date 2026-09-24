@@ -42,6 +42,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('kelas', KelasController::class)->except('show')->parameters(['kelas' => 'kelas']);
         Route::apiResource('guru-mapel-kelas', GuruMapelKelasController::class)->except('show')->parameters(['guru-mapel-kelas' => 'guruMapelKelas']);
         Route::post('/absensi/manual', [AbsensiPegawaiController::class, 'manual']);
+        Route::delete('/absensi/{id}', [AbsensiPegawaiController::class, 'destroy']);
     });
 
     // Admin & superadmin: kelola user guru/pegawai

@@ -143,4 +143,17 @@ class AbsensiPegawaiController extends Controller
 
         return new AbsensiResource($absensi->load('user'));
     }
+
+    public function destroy($id, Request $request)
+    {
+        $absensi = AbsensiPegawai::findOrFail($id);
+        
+        if ($absensi->instansi_id !== $request->user()->instansi_id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+        
+        $absensi->delete();
+        
+        return response()->json(['message' => 'Data absensi berhasil dihapus.']);
+    }
 }
