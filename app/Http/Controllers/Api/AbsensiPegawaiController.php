@@ -72,6 +72,22 @@ class AbsensiPegawaiController extends Controller
                 if ($jamSekarang < $jamMasukJadwal) {
                     return response()->json(['message' => 'Belum waktunya absen masuk (Jam masuk: ' . $jadwalHari->jam_masuk . ').'], 422);
                 }
+
+                if ($user->isGuru()) {
+                    $jadwalMengajar = \App\Models\GuruMapelKelas::where('guru_id', $user->id)
+                        ->where('hari', $waktu->dayOfWeekIso)
+                        ->get();
+
+                    if ($jadwalMengajar->isNotEmpty()) {
+                        $jamSelesaiTerakhir = $jadwalMengajar->max('jam_selesai');
+                        if ($jamSelesaiTerakhir && $jamSekarang > $jamSelesaiTerakhir) {
+                            return response()->json([
+                                'message' => 'Absen ditolak. Jam mengajar Anda hari ini sudah selesai, otomatis terhitung Alpa.'
+                            ], 422);
+                        }
+                    }
+                }
+
                 $status = $this->jadwal->statusMasuk(
                     $jadwalHari->jam_masuk,
                     $waktu,
