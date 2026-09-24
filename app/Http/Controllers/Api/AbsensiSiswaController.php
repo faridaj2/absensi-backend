@@ -318,11 +318,23 @@ class AbsensiSiswaController extends Controller
 
     private function sudahAbsenMasuk(User $guru, string $tanggal): bool
     {
-        return AbsensiPegawai::query()
+        $hasMasuk = AbsensiPegawai::query()
             ->where('user_id', $guru->id)
             ->where('tanggal', $tanggal)
             ->where('jenis', AbsensiPegawai::JENIS_MASUK)
             ->exists();
+
+        if (!$hasMasuk) {
+            return false;
+        }
+
+        $hasPulang = AbsensiPegawai::query()
+            ->where('user_id', $guru->id)
+            ->where('tanggal', $tanggal)
+            ->where('jenis', AbsensiPegawai::JENIS_PULANG)
+            ->exists();
+
+        return !$hasPulang;
     }
 
     private function formatSlot(GuruMapelKelas $slot, string $sebagai): array
