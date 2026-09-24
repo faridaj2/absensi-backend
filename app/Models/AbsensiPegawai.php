@@ -32,6 +32,7 @@ class AbsensiPegawai extends Model
         'status',
         'waktu_absen',
         'keterangan',
+        'device_id',
     ];
 
     protected function casts(): array

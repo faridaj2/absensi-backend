@@ -98,6 +98,7 @@ class AbsensiPegawaiController extends Controller
             'jarak_meter' => round($jarak, 2),
             'status' => $status,
             'waktu_absen' => $waktu,
+            'device_id' => $request->_device_id ?? null,
         ]);
 
         return new AbsensiResource($absensi->load('user'));

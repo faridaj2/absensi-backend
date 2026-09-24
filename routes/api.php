@@ -47,11 +47,26 @@ Route::middleware('auth:sanctum')->group(function () {
     // Admin & superadmin: kelola user guru/pegawai
     Route::middleware('role:admin,superadmin')->group(function () {
         Route::apiResource('users', UserController::class)->except('show');
+
+        // Manajemen Perangkat
+        Route::get('/device-requests', [\App\Http\Controllers\Api\AdminDeviceController::class, 'getRequests']);
+        Route::post('/device-requests/{id}/approve', [\App\Http\Controllers\Api\AdminDeviceController::class, 'approveRequest']);
+        Route::post('/device-requests/{id}/reject', [\App\Http\Controllers\Api\AdminDeviceController::class, 'rejectRequest']);
+        Route::get('/devices', [\App\Http\Controllers\Api\AdminDeviceController::class, 'getDevices']);
+        Route::post('/devices/{id}/revoke', [\App\Http\Controllers\Api\AdminDeviceController::class, 'revokeDevice']);
+        Route::get('/device-audit-logs', [\App\Http\Controllers\Api\AdminDeviceController::class, 'getAuditLogs']);
     });
 
     // Absensi guru & pegawai
     Route::get('/absensi/pegawai', [AbsensiPegawaiController::class, 'index']);
-    Route::middleware('role:guru,pegawai')->post('/absensi/pegawai', [AbsensiPegawaiController::class, 'store']);
+    Route::middleware(['role:guru,pegawai', \App\Http\Middleware\EnsureRegisteredDevice::class])->post('/absensi/pegawai', [AbsensiPegawaiController::class, 'store']);
+
+    // Perangkat guru
+    Route::middleware('role:guru,pegawai')->group(function () {
+        Route::post('/device/register', [\App\Http\Controllers\Api\TeacherDeviceController::class, 'register']);
+        Route::post('/device/change-request', [\App\Http\Controllers\Api\TeacherDeviceController::class, 'changeRequest']);
+        Route::get('/device/status', [\App\Http\Controllers\Api\TeacherDeviceController::class, 'status']);
+    });
 
     // Absensi siswa
     Route::middleware('role:guru')->group(function () {
