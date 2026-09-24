@@ -81,8 +81,18 @@ class AbsensiPegawaiController extends Controller
                     if ($jadwalMengajar->isNotEmpty()) {
                         $jamSelesaiTerakhir = $jadwalMengajar->max('jam_selesai');
                         if ($jamSelesaiTerakhir && $jamSekarang > $jamSelesaiTerakhir) {
+                            \App\Models\AbsensiPegawai::firstOrCreate(
+                                [
+                                    'instansi_id' => $user->instansi_id,
+                                    'user_id' => $user->id,
+                                    'tanggal' => $tanggal,
+                                    'jenis' => null,
+                                ],
+                                ['keterangan' => \App\Models\AbsensiPegawai::KETERANGAN_ALPA]
+                            );
+
                             return response()->json([
-                                'message' => 'Absen ditolak. Jam mengajar Anda hari ini sudah selesai, otomatis terhitung Alpa.'
+                                'message' => 'Absen ditolak. Jam mengajar Anda hari ini sudah selesai, sistem otomatis mencatat Anda sebagai Alpa.'
                             ], 422);
                         }
                     }

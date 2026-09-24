@@ -100,3 +100,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/laporan/siswa/filter', [LaporanController::class, 'filterSiswa']);
     });
 });
+
+Route::get('/cron/check-alpa', function (\Illuminate\Http\Request $request) {
+    if ($request->query('key') !== env('CRON_KEY', 'default-cron-key-123')) {
+        return response()->json(['message' => 'Unauthorized'], 401);
+    }
+    \Illuminate\Support\Facades\Artisan::call('absen:check-alpa');
+    return response()->json([
+        'message' => 'Cron executed successfully',
+        'output' => \Illuminate\Support\Facades\Artisan::output()
+    ]);
+});
