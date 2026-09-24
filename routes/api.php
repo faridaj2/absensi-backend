@@ -111,3 +111,14 @@ Route::get('/cron/check-alpa', function (\Illuminate\Http\Request $request) {
         'output' => \Illuminate\Support\Facades\Artisan::output()
     ]);
 });
+
+Route::get('/cron/freeze-laporan', function (\Illuminate\Http\Request $request) {
+    if ($request->query('key') !== env('CRON_KEY', 'default-cron-key-123')) {
+        return response()->json(['message' => 'Unauthorized'], 401);
+    }
+    \Illuminate\Support\Facades\Artisan::call('laporan:freeze');
+    return response()->json([
+        'message' => 'Laporan freeze executed successfully',
+        'output' => \Illuminate\Support\Facades\Artisan::output()
+    ]);
+});
