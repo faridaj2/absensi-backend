@@ -92,7 +92,7 @@ class MonitorController extends Controller
         $absenSiswa = AbsensiSiswa::withoutGlobalScope('instansi')
             ->where('instansi_id', $instansiId)
             ->where('tanggal', $tanggal)
-            ->get(['id', 'guru_mapel_kelas_id', 'siswa_id']);
+            ->get(['id', 'guru_mapel_kelas_id', 'siswa_id', 'dicatat_oleh']);
 
         $absenBySlot = $absenSiswa->groupBy('guru_mapel_kelas_id');
 
@@ -119,9 +119,17 @@ class MonitorController extends Controller
             $kelasAgg[$key]['total_slot']++;
             $p = $pengganti->get($s->id);
             $guruEfektif = $p?->guruPengganti?->name ?? $s->guru?->name;
-            $jumlah = $absenBySlot->get($s->id)?->count() ?? 0;
+            
+            $records = $absenBySlot->get($s->id);
+            $jumlah = $records?->count() ?? 0;
             $terabsen = $jumlah > 0;
             if ($terabsen) $kelasAgg[$key]['slot_terabsen']++;
+
+            $pencatat = null;
+            if ($terabsen) {
+                $firstRecord = $records->first();
+                $pencatat = $firstRecord->dicatat_oleh === null ? 'system' : 'guru';
+            }
 
             $kelasAgg[$key]['slot'][] = [
                 'id' => $s->id,
@@ -132,6 +140,7 @@ class MonitorController extends Controller
                 'guru_nama' => $guruEfektif,
                 'sebagai_pengganti' => (bool) $p,
                 'terabsen' => $terabsen,
+                'pencatat' => $pencatat,
                 'jumlah_siswa' => $jumlah,
             ];
         }
