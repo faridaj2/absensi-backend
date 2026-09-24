@@ -153,7 +153,7 @@ class AbsensiSiswaController extends Controller
 
         if (! $this->sudahAbsenMasuk($guru, $tanggal)) {
             throw ValidationException::withMessages([
-                'slot' => 'Anda harus absen masuk terlebih dahulu.',
+                'slot' => 'Aksi ditolak. Pastikan Anda sudah absen masuk dan belum melakukan absen pulang.',
             ]);
         }
 
@@ -199,7 +199,7 @@ class AbsensiSiswaController extends Controller
 
         if (! $this->sudahAbsenMasuk($guru, $tanggal)) {
             throw ValidationException::withMessages([
-                'slot' => 'Anda harus absen masuk terlebih dahulu sebelum mengambil kembali slot.',
+                'slot' => 'Aksi ditolak. Pastikan Anda sudah absen masuk dan belum melakukan absen pulang.',
             ]);
         }
 
@@ -312,7 +312,7 @@ class AbsensiSiswaController extends Controller
     private function ensureSudahMasuk(User $guru, string $tanggal): void
     {
         if (! $this->sudahAbsenMasuk($guru, $tanggal)) {
-            abort(403, 'Anda harus absen masuk terlebih dahulu.');
+            abort(403, 'Aksi ditolak. Pastikan Anda sudah absen masuk dan belum melakukan absen pulang.');
         }
     }
 
