@@ -45,4 +45,41 @@ class GuruMapelKelasController extends Controller
 
         return response()->json(['message' => 'Assignment dihapus.']);
     }
+
+    public function jadwalSaya(Request $request)
+    {
+        $guruId = $request->user()->id;
+        $query = GuruMapelKelas::with(['mapel'])
+            ->where('guru_id', $guruId)
+            ->orderBy('hari')
+            ->orderBy('jam_ke')
+            ->get();
+
+        $grouped = $query->groupBy('hari');
+        
+        $hariMap = [
+            1 => 'Senin', 2 => 'Selasa', 3 => 'Rabu', 
+            4 => 'Kamis', 5 => 'Jumat', 6 => 'Sabtu', 7 => 'Minggu'
+        ];
+        
+        $result = [];
+        foreach ($hariMap as $num => $nama) {
+            $jadwalHari = $grouped->get($num, []);
+            $formattedJadwal = [];
+            foreach ($jadwalHari as $j) {
+                $formattedJadwal[] = [
+                    'jam_ke' => $j->jam_ke,
+                    'waktu' => substr($j->jam_mulai, 0, 5) . ' - ' . substr($j->jam_selesai, 0, 5),
+                    'kelas' => $j->kelas_nama,
+                    'mapel' => $j->mapel->nama_mapel ?? '-',
+                ];
+            }
+            $result[] = [
+                'hari' => $nama,
+                'jadwal' => $formattedJadwal,
+            ];
+        }
+        
+        return response()->json(['data' => $result]);
+    }
 }

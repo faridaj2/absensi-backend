@@ -70,6 +70,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Absensi siswa
     Route::middleware('role:guru')->group(function () {
+        Route::get('/jadwal-mengajar', [GuruMapelKelasController::class, 'jadwalSaya']);
         Route::get('/absensi-siswa/slot', [AbsensiSiswaController::class, 'slotsHariIni']);
         Route::get('/absensi-siswa/{guruMapelKelas}/siswa', [AbsensiSiswaController::class, 'siswa']);
         Route::post('/absensi-siswa/{guruMapelKelas}/claim', [AbsensiSiswaController::class, 'claim']);
