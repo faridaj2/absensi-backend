@@ -27,6 +27,7 @@ class CheckAlpa extends Command
         $hariIni = Carbon::today();
         $tanggal = $hariIni->toDateString();
         $dayOfWeekIso = $hariIni->dayOfWeekIso;
+        $now = Carbon::now();
 
         // ---- 1. ALPA GURU ----
         $guruIds = GuruMapelKelas::where('hari', $dayOfWeekIso)->pluck('guru_id')->unique();
@@ -40,17 +41,33 @@ class CheckAlpa extends Command
                 ->where('tanggal', $tanggal)
                 ->exists();
 
-            if (! $sudahAbsen) {
-                AbsensiPegawai::create([
-                    'instansi_id' => $user->instansi_id,
-                    'user_id' => $user->id,
-                    'tanggal' => $tanggal,
-                    'jenis' => null,
-                    'keterangan' => AbsensiPegawai::KETERANGAN_ALPA,
-                ]);
-                $this->info("Set Alpa Guru ID: {$user->id} ({$user->name})");
-                $totalGuruAlpa++;
+            if ($sudahAbsen) {
+                continue;
             }
+
+            // Cek apakah semua jadwal guru ini hari ini sudah lewat
+            $jadwalTerakhir = GuruMapelKelas::where('guru_id', $guruId)
+                ->where('hari', $dayOfWeekIso)
+                ->orderBy('jam_selesai', 'desc')
+                ->first();
+
+            if ($jadwalTerakhir && $jadwalTerakhir->jam_selesai) {
+                $jamSelesaiTerakhir = Carbon::parse($jadwalTerakhir->jam_selesai);
+                if ($now->lt($jamSelesaiTerakhir)) {
+                    $this->info("Guru {$user->name} belum absen, tapi jadwal terakhir ({$jadwalTerakhir->jam_selesai}) belum lewat. Dilewati.");
+                    continue;
+                }
+            }
+
+            AbsensiPegawai::create([
+                'instansi_id' => $user->instansi_id,
+                'user_id' => $user->id,
+                'tanggal' => $tanggal,
+                'jenis' => null,
+                'keterangan' => AbsensiPegawai::KETERANGAN_ALPA,
+            ]);
+            $this->info("Set Alpa Guru ID: {$user->id} ({$user->name})");
+            $totalGuruAlpa++;
         }
 
         // ---- 2. ALPA SISWA ----
@@ -58,7 +75,6 @@ class CheckAlpa extends Command
             ->where('hari', $dayOfWeekIso)
             ->get();
 
-        $now = Carbon::now();
         $totalSlot = 0;
         $totalSiswaAlpa = 0;
 
