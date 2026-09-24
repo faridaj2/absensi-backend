@@ -48,14 +48,25 @@ class GuruMapelKelasController extends Controller
 
     public function jadwalSaya(Request $request)
     {
-        $guruId = $request->user()->id;
+        $guru = $request->user();
         $query = GuruMapelKelas::with(['mapel'])
-            ->where('guru_id', $guruId)
+            ->where('guru_id', $guru->id)
             ->orderBy('hari')
             ->orderBy('jam_ke')
             ->get();
 
         $grouped = $query->groupBy('hari');
+        
+        // Ambil hari aktif berdasarkan pengaturan jadwal instansi
+        $hariAktif = \App\Models\Jadwal::where('instansi_id', $guru->instansi_id)
+            ->orderBy('hari')
+            ->pluck('hari')
+            ->toArray();
+
+        // Fallback jika admin belum mengatur jadwal sama sekali
+        if (empty($hariAktif)) {
+            $hariAktif = [1, 2, 3, 4, 5, 6, 7];
+        }
         
         $hariMap = [
             1 => 'Senin', 2 => 'Selasa', 3 => 'Rabu', 
@@ -63,9 +74,11 @@ class GuruMapelKelasController extends Controller
         ];
         
         $result = [];
-        foreach ($hariMap as $num => $nama) {
+        foreach ($hariAktif as $num) {
+            $nama = $hariMap[$num] ?? 'Unknown';
             $jadwalHari = $grouped->get($num, []);
             $formattedJadwal = [];
+            
             foreach ($jadwalHari as $j) {
                 $formattedJadwal[] = [
                     'jam_ke' => $j->jam_ke,
@@ -74,6 +87,7 @@ class GuruMapelKelasController extends Controller
                     'mapel' => $j->mapel->nama_mapel ?? '-',
                 ];
             }
+            
             $result[] = [
                 'hari' => $nama,
                 'jadwal' => $formattedJadwal,
