@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\MapelController;
 use App\Http\Controllers\Api\MonitorController;
 use App\Http\Controllers\Api\SiswaController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\ArsipLaporanController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login']);
@@ -31,6 +32,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('instansi/kode-admin', [InstansiController::class, 'kodeAdmin']);
         Route::apiResource('instansi', InstansiController::class);
         Route::apiResource('admin', AdminController::class)->except('show');
+        
+        Route::get('arsip-laporan', [ArsipLaporanController::class, 'index']);
+        Route::post('arsip-laporan', [ArsipLaporanController::class, 'store']);
+        Route::delete('arsip-laporan/{periode}', [ArsipLaporanController::class, 'destroy']);
     });
 
     // Admin: master data per instansi
